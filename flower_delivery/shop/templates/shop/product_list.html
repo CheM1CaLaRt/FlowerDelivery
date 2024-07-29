@@ -1,18 +1,22 @@
 {% extends 'shop/index.html' %}
 
 {% block content %}
-<h2>Product List</h2>
-<div class="row">
-    {% for product in products %}
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-            <div class="card-body">
-                <h5 class="card-title">{{ product.name }}</h5>
-                <p class="card-text">{{ product.price }} ₽</p>  <!-- Цена в рублях -->
+<div class="container mt-5">
+    <h1>Our Products</h1>
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">Price: {{ product.price }} ₽</p>
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Add to Cart</a>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% endblock %}
+
