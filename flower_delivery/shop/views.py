@@ -1,31 +1,23 @@
-# shop/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login as auth_login
 from .models import Product, Order
 from .forms import OrderForm
 
 def index(request):
-    return render(request, 'shop/index.html')
+    products = Product.objects.all()
+    return render(request, 'shop/index.html', {'products': products})
 
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=password)
-            login(request, user)
-            return redirect('product_list')
+            user = form.save()
+            auth_login(request, user)
+            return redirect('index')
     else:
         form = UserCreationForm()
-    return render(request, 'shop/register.html', {'form': form})
-
-def product_list(request):
-    products = Product.objects.all()
-    return render(request, 'shop/product_list.html', {'products': products})
+    return render(request, 'registration/register.html', {'form': form})
 
 def create_order(request):
     if request.method == 'POST':
@@ -34,7 +26,6 @@ def create_order(request):
             order = form.save(commit=False)
             order.user = request.user
             order.save()
-            form.save_m2m()
             return redirect('order_list')
     else:
         form = OrderForm()
@@ -43,3 +34,7 @@ def create_order(request):
 def order_list(request):
     orders = Order.objects.filter(user=request.user)
     return render(request, 'shop/order_list.html', {'orders': orders})
+
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, 'shop/product_list.html', {'products': products})

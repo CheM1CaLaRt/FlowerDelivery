@@ -26,6 +26,13 @@ SECRET_KEY = 'django-insecure-t9jm3w!a^1qy!3e&*tw7(oh-ok+hb4j4mqt+v0&11lxy*1cpny
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+
 ALLOWED_HOSTS = []
 
 
