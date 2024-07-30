@@ -4,20 +4,26 @@ from django.contrib.auth import login as auth_login
 from .models import Product, Order, CartItem
 from .forms import OrderForm, CartItemForm
 from django.contrib.auth.decorators import login_required
+from .forms import CustomUserCreationForm
+from django.conf import settings
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 def index(request):
     products = Product.objects.all()
     return render(request, 'shop/index.html', {'products': products})
 
+
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
             return redirect('index')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
+
     return render(request, 'registration/register.html', {'form': form})
 
 @login_required

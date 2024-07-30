@@ -1,19 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <h2>Register</h2>
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Register - Flower Delivery{% endblock %}
+
+{% block extra_styles %}
+   <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f8f9fa; /* Фоновый цвет страницы */
+        }
+        body {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                        url('{% static 'shop/images/background.jpg' %}') no-repeat center center fixed;
+            background-size: cover;
+
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh; /* Высота контейнера на весь экран */
+            padding: 15px; /* Отступы */
+        }
+        .login-form {
+            background-color: #fff; /* Белый фон для формы */
+            border-radius: 8px; /* Скругленные углы */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Тень вокруг формы */
+            padding: 30px; /* Внутренние отступы */
+            width: 100%;
+            max-width: 600px; /* Ширина формы */
+        }
+        .login-form h2 {
+            margin-bottom: 20px; /* Отступ снизу */
+        }
+        .login-form button {
+            width: 100%; /* Кнопка на всю ширину формы */
+        }
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+        .content {
+            flex: 1;
+        }
+         .navbar {
+            background-color: #000; /* Черный фон для навигационной панели */
+        }
+        .navbar-light .navbar-nav .nav-link {
+            color: #fff; /* Белый цвет текста для ссылок в навигационной панели */
+        }
+        .navbar-light .navbar-nav .nav-link:hover {
+            color: #ccc; /* Цвет текста при наведении на ссылку */
+        }
+        .navbar-brand {
+            color: #fff !important; /* Белый цвет текста для логотипа */
+        }
+        .navbar-toggler-icon {
+            background-image: url('data:image/svg+xml,...'); /* Можно изменить иконку бургер-меню, если нужно */
+        }
+    </style>
+    {% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="login-form">
+        <h2 class="text-center">Register</h2>
         <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.username.label_tag }} {{ form.username.errors }}
+        {{ form.username }}<br>
+            <small class="form-text text-muted">{{ form.username.help_text }}</small><br>
+
+            {{ form.email.label_tag }} {{ form.email.errors }}
+            {{ form.email }}
+
+           <br> {{ form.phone.label_tag }} {{ form.phone.errors }}
+            {{ form.phone }}<br>
+            <small class="form-text text-muted">{{ form.phone.help_text }}</small><br>
+
+            {{ form.password1.label_tag }} {{ form.password1.errors }}
+            {{ form.password1 }}<br>
+            <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+
+            {{ form.password2.label_tag }} {{ form.password2.errors }}
+            {{ form.password2 }}<br>
+            <small class="form-text text-muted">{{ form.password2.help_text }}</small><br>
+
             <button type="submit" class="btn btn-primary">Register</button>
         </form>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
