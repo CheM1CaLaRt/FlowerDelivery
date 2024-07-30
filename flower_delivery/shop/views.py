@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from .models import Product, Cart, CartItem
 from .models import Cart, CartItem, Order, OrderItem
+from django.http import HttpResponseBadRequest
 
 User = get_user_model()
 def index(request):
@@ -33,21 +34,31 @@ def register(request):
 
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    quantity = request.POST.get('quantity')
 
-    # Получаем или создаем корзину для текущего пользователя
-    cart, created = Cart.objects.get_or_create(user=request.user)
+    if quantity:
+        try:
+            quantity = int(quantity)
+            if quantity < 1:
+                return HttpResponseBadRequest("Количество должно быть больше нуля.")
+        except ValueError:
+            return HttpResponseBadRequest("Некорректное значение количества.")
 
-    # Получаем или создаем элемент корзины
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        # Получаем или создаем корзину для текущего пользователя
+        cart, created = Cart.objects.get_or_create(user=request.user)
 
-    if created:
-        cart_item.quantity = 1  # Устанавливаем количество по умолчанию
-    else:
-        cart_item.quantity += 1  # Увеличиваем количество, если элемент уже существует
+        # Получаем или создаем элемент корзины
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
-    cart_item.save()
+        if created:
+            cart_item.quantity = quantity  # Устанавливаем выбранное количество
+        else:
+            cart_item.quantity += quantity  # Увеличиваем количество на выбранное значение
 
-    return redirect('view_cart')  # Замените на ваше представление корзины
+        cart_item.save()
+        return redirect('view_cart')  # Замените на ваше представление корзины
+
+    return HttpResponseBadRequest("Не удалось добавить товар в корзину.")
 
 @login_required
 def view_cart(request):
