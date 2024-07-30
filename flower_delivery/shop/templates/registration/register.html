@@ -12,27 +12,26 @@
         }
         body {
             background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-                        url('{% static 'shop/images/background.jpg' %}') no-repeat center center fixed;
+                        url('{% static 'shop/images/background.jpg' %}');
             background-size: cover;
-
         }
         .container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 50vh; /* Высота контейнера на весь экран */
-            padding: 15px; /* Отступы */
+            min-height: 30vh; /* Высота контейнера на весь экран */
+            padding: 10px; /* Отступы */
         }
         .login-form {
             background-color: #fff; /* Белый фон для формы */
             border-radius: 8px; /* Скругленные углы */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Тень вокруг формы */
-            padding: 30px; /* Внутренние отступы */
+            padding: 20px; /* Внутренние отступы */
             width: 100%;
-            max-width: 600px; /* Ширина формы */
+            max-width: 400px; /* Ширина формы */
         }
         .login-form h2 {
-            margin-bottom: 20px; /* Отступ снизу */
+            margin-bottom: 10px; /* Отступ снизу */
         }
         .login-form button {
             width: 100%; /* Кнопка на всю ширину формы */
@@ -58,33 +57,38 @@
             color: #fff !important; /* Белый цвет текста для логотипа */
         }
         .navbar-toggler-icon {
-            background-image: url('data:image/svg+xml,...'); /* Можно изменить иконку бургер-меню, если нужно */
+            background-image: url('data:image/svg+xml;charset=UTF8,%3Csvg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath stroke="rgba%28255, 255, 255, 1%29" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" d="M4 7h22M4 15h22M4 23h22"/%3E%3C/svg%3E') !important; /* Можно изменить иконку бургер-меню, если нужно */
+        }
+        .footer {
+            background-color: #000; /* Черный фон для навигационной панели */
+            color: #fff; /* Белый цвет текста для ссылок в навигационной панели */
+            padding: 10px; /* Отступы внутри навигационной панели */
         }
     </style>
     {% endblock %}
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-12">
     <div class="login-form">
         <h2 class="text-center">Register</h2>
         <form method="post">
         {% csrf_token %}
-        {{ form.non_field_errors }}
-        {{ form.username.label_tag }} {{ form.username.errors }}
+        {{ form.non_field_errors }}<br>
+        {{ form.username.label_tag }} {{ form.username.errors }}<br>
         {{ form.username }}<br>
             <small class="form-text text-muted">{{ form.username.help_text }}</small><br>
 
-            {{ form.email.label_tag }} {{ form.email.errors }}
-            {{ form.email }}
+            {{ form.email.label_tag }} {{ form.email.errors }}<br>
+            {{ form.email }}<br>
 
-           <br> {{ form.phone.label_tag }} {{ form.phone.errors }}
+           <br> {{ form.phone.label_tag }} {{ form.phone.errors }}<br>
             {{ form.phone }}<br>
             <small class="form-text text-muted">{{ form.phone.help_text }}</small><br>
 
-            {{ form.password1.label_tag }} {{ form.password1.errors }}
+            {{ form.password1.label_tag }} {{ form.password1.errors }}<br>
             {{ form.password1 }}<br>
             <small class="form-text text-muted">{{ form.password1.help_text }}</small>
 
-            {{ form.password2.label_tag }} {{ form.password2.errors }}
+            {{ form.password2.label_tag }} {{ form.password2.errors }}<br>
             {{ form.password2 }}<br>
             <small class="form-text text-muted">{{ form.password2.help_text }}</small><br>
 
