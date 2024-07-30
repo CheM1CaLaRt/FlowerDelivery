@@ -7,6 +7,10 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from .models import Product, Cart, CartItem
+from .models import Cart, CartItem, Order, OrderItem
 
 User = get_user_model()
 def index(request):
@@ -26,40 +30,66 @@ def register(request):
 
     return render(request, 'registration/register.html', {'form': form})
 
-@login_required
+
 def add_to_cart(request, product_id):
-    product = Product.objects.get(id=product_id)
-    cart_item, created = CartItem.objects.get_or_create(user=request.user, product=product)
-    if request.method == 'POST':
-        form = CartItemForm(request.POST, instance=cart_item)
-        if form.is_valid():
-            form.save()
-            return redirect('view_cart')
+    product = get_object_or_404(Product, id=product_id)
+
+    # Получаем или создаем корзину для текущего пользователя
+    cart, created = Cart.objects.get_or_create(user=request.user)
+
+    # Получаем или создаем элемент корзины
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+
+    if created:
+        cart_item.quantity = 1  # Устанавливаем количество по умолчанию
     else:
-        form = CartItemForm(instance=cart_item)
-    return render(request, 'shop/add_to_cart.html', {'form': form, 'product': product})
+        cart_item.quantity += 1  # Увеличиваем количество, если элемент уже существует
+
+    cart_item.save()
+
+    return redirect('view_cart')  # Замените на ваше представление корзины
 
 @login_required
 def view_cart(request):
-    cart_items = CartItem.objects.filter(user=request.user)
-    total_price = sum(item.get_total_price() for item in cart_items)
-    return render(request, 'shop/view_cart.html', {'cart_items': cart_items, 'total_price': total_price})
+    try:
+        # Найти корзину текущего пользователя
+        cart = Cart.objects.get(user=request.user)
+        # Получить все товары в корзине
+        cart_items = CartItem.objects.filter(cart=cart)
+    except Cart.DoesNotExist:
+        # Если корзина не существует, создайте пустой список
+        cart_items = []
+
+    return render(request, 'shop/view_cart.html', {'cart_items': cart_items})
+
 
 @login_required
 def create_order(request):
-    cart_items = CartItem.objects.filter(user=request.user)
     if request.method == 'POST':
-        for item in cart_items:
-            Order.objects.create(
-                user=request.user,
-                product=item.product,
-                quantity=item.quantity,
-                total_price=item.get_total_price(),
-                status='Pending'
-            )
-        cart_items.delete()
-        return redirect('order_history')
-    return render(request, 'shop/create_order.html', {'cart_items': cart_items})
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            order = form.save(commit=False)
+            order.user = request.user
+            order.save()
+
+            # Получаем корзину текущего пользователя
+            cart = Cart.objects.get(user=request.user)
+            cart_items = CartItem.objects.filter(cart=cart)
+
+            for item in cart_items:
+                # Используйте цену продукта при создании OrderItem
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.price  # Передаем цену
+                )
+                item.delete()  # Удаляем товар из корзины после добавления в заказ
+
+            return redirect('order_success')  # Перенаправляем на страницу успеха
+    else:
+        form = OrderForm()
+    return render(request, 'shop/create_order.html', {'form': form})
 
 @login_required
 def order_history(request):
@@ -70,3 +100,12 @@ def order_history(request):
 def product_list(request):
     products = Product.objects.all()
     return render(request, 'shop/product_list.html', {'products': products})
+
+@login_required
+def view_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'shop/view_orders.html', {'orders': orders})
+
+@login_required
+def order_success(request):
+    return render(request, 'shop/order_success.html')

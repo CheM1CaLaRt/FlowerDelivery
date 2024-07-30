@@ -1,27 +1,12 @@
-{% extends 'shop/index.html' %}
+{% extends 'shop/base.html' %}
 
 {% block content %}
-<h2>Review Your Order</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in cart_items %}
-        <tr>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.get_total_price }} ₽</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Place Order</button>
-</form>
+<div class="container mt-5">
+    <h2>Create Order</h2>
+    <form method="post" action="{% url 'create_order' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Place Order</button>
+    </form>
+</div>
 {% endblock %}

@@ -2,16 +2,23 @@ from django import forms
 from .models import Order, CartItem
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
+from .models import OrderItem
 
 class OrderForm(forms.ModelForm):
+    delivery_address = forms.CharField(max_length=255)
     class Meta:
         model = Order
-        fields = ['product', 'quantity']
+        fields = ['address']
+
+class OrderItemForm(forms.ModelForm):
+    class Meta:
+        model = OrderItem
+        fields = ['order', 'product', 'price', 'quantity']
 
 class CartItemForm(forms.ModelForm):
     class Meta:
         model = CartItem
-        fields = ['product', 'quantity']
+        fields = ['quantity']
 
 class CustomUserCreationForm(UserCreationForm):
     phone = forms.CharField(required=False, max_length=15, help_text='Optional. Enter your phone number.')
