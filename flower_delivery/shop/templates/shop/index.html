@@ -1,10 +1,53 @@
 {% extends 'shop/base.html' %}
+{% load static %}
 
 {% block title %}Home - Flower Delivery{% endblock %}
 
+{% block extra_styles %}
+   <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                        url('{% static 'shop/images/background.jpg' %}') no-repeat center center fixed;
+            background-size: cover;
+            color: white; /* Устанавливаем цвет текста на белый для лучшей видимости */
+        }
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+        .content {
+            flex: 1;
+        }
+         .navbar {
+            background-color: #000; /* Черный фон для навигационной панели */
+        }
+        .navbar-light .navbar-nav .nav-link {
+            color: #fff; /* Белый цвет текста для ссылок в навигационной панели */
+        }
+        .navbar-light .navbar-nav .nav-link:hover {
+            color: #ccc; /* Цвет текста при наведении на ссылку */
+        }
+        .navbar-brand {
+            color: #fff !important; /* Белый цвет текста для логотипа */
+        }
+        .navbar-toggler-icon {
+            background-image: url('data:image/svg+xml,...'); /* Можно изменить иконку бургер-меню, если нужно */
+        }
+    </style>
+{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>Welcome to Flower Delivery</h1>
-    <a href="{% url 'product_list' %}" class="btn btn-primary">Shop Now</a>
+<div class="container-fluid d-flex align-items-center justify-content-center" style="height: 50vh;">
+    <div class="text-center text-white">
+        <h1 class="display-4 font-weight-bold">Welcome to Flower Delivery</h1>
+        <p class="lead mb-4">Beautiful flowers delivered straight to your door</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">Shop Now</a>
+    </div>
 </div>
 {% endblock %}
+
+
