@@ -5,10 +5,25 @@ from .models import CustomUser
 from .models import OrderItem
 
 class OrderForm(forms.ModelForm):
-    delivery_address = forms.CharField(max_length=255)
     class Meta:
         model = Order
-        fields = ['address']
+        fields = ['delivery_address', 'payment_method']
+        labels = {
+            'delivery_address': 'Delivery Address',
+            'payment_method': 'Payment Method'
+        }
+        widgets = {
+            'payment_method': forms.RadioSelect
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(OrderForm, self).__init__(*args, **kwargs)
+        self.fields['payment_method'].initial = 'card'  # Устанавливаем значение по умолчанию
+
+        # Убираем пустой вариант выбора
+        self.fields['payment_method'].choices = [
+            (key, value) for key, value in self.fields['payment_method'].choices if key
+        ]
 
 class OrderItemForm(forms.ModelForm):
     class Meta:

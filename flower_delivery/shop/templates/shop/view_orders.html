@@ -1,30 +1,36 @@
-{% extends 'shop/base.html' %}
+{% extends 'shop/index.html' %}
 {% block content %}
-<div class="container mt-5">
-    <h2>Your Orders</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Created At</th>
-                <th>Status</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td>{{ order.id }}</td>
-                <td>{{ order.created_at }}</td>
-                <td>{{ order.get_status_display }}</td>
-                <td>{{ order.get_total_cost }} ₽</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">You have no orders yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<h2>My Orders</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Created At</th>
+            <th>Items</th>
+            <th>Total Price</th>
+            <th>Status</th>
+            <th>Delivery Address</th>
+            <th>Payment Method</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in order_reports %}
+        <tr>
+            <td>{{ order.order_id }}</td>
+            <td>{{ order.created_at }}</td>
+            <td>
+                <ul>
+                    {% for item in order.items %}
+                    <li>{{ item.product.name }} (x{{ item.quantity }})</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>${{ order.total_price }}</td>
+            <td>{{ order.status }}</td>
+            <td>{{ order.delivery_address }}</td>
+            <td>{{ order.payment_method }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

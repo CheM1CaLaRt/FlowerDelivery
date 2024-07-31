@@ -62,16 +62,17 @@ def add_to_cart(request, product_id):
 
 @login_required
 def view_cart(request):
-    try:
-        # Найти корзину текущего пользователя
-        cart = Cart.objects.get(user=request.user)
-        # Получить все товары в корзине
-        cart_items = CartItem.objects.filter(cart=cart)
-    except Cart.DoesNotExist:
-        # Если корзина не существует, создайте пустой список
-        cart_items = []
+    cart = Cart.objects.get(user=request.user)
+    cart_items = CartItem.objects.filter(cart=cart)
 
-    return render(request, 'shop/view_cart.html', {'cart_items': cart_items})
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+
+    context = {
+        'cart_items': cart_items,
+        'total_price': total_price,
+    }
+
+    return render(request, 'shop/view_cart.html', context)
 
 
 @login_required
@@ -114,8 +115,26 @@ def product_list(request):
 
 @login_required
 def view_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'shop/view_orders.html', {'orders': orders})
+    orders = Order.objects.filter(user=request.user).prefetch_related('orderitem_set__product')
+
+    order_reports = []
+    for order in orders:
+        items = order.orderitem_set.all()
+        total_price = sum(item.get_total_price() for item in items)
+
+        order_data = {
+            'order_id': order.id,
+            'created_at': order.created_at,
+            'items': items,
+            'total_price': total_price,
+            'status': order.status,
+            'delivery_address': order.delivery_address,
+            'payment_method': order.get_payment_method_display()
+        }
+        order_reports.append(order_data)
+
+    context = {'order_reports': order_reports}
+    return render(request, 'shop/view_orders.html', context)
 
 @login_required
 def order_success(request):
