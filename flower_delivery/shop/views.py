@@ -1,19 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
-from .models import Product, Order, CartItem
-from .forms import OrderForm, CartItemForm
+from .forms import OrderForm, CartItemForm, CustomUserCreationForm, ReviewForm
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from .models import Product, Cart, CartItem
-from .models import Cart, CartItem, Order, OrderItem
-from django.http import HttpResponseBadRequest
-from .models import Product, Review
-from .forms import ReviewForm
+from django.http import HttpResponseBadRequest, HttpResponse
+from .models import Product, Cart, CartItem, Order, OrderItem, Review
+from .utils import is_within_working_hours  # Импортируйте функцию проверки рабочего времени
 
 User = get_user_model()
 def index(request):
@@ -95,6 +90,8 @@ def remove_from_cart(request, cart_item_id):
 
 @login_required
 def create_order(request):
+    if not is_within_working_hours():
+        return HttpResponse("Заказы принимаются только в рабочее время (09:00 - 18:00).")
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():

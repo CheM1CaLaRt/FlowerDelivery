@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, AbstractUser
 from django.conf import settings
+from django.db.models import Avg
 
 
 class CustomUser(AbstractUser):
@@ -17,6 +18,11 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def average_rating(self):
+        avg_rating = self.reviews.aggregate(average=Avg('rating'))['average']
+        return round(avg_rating, 1) if avg_rating is not None else None
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
