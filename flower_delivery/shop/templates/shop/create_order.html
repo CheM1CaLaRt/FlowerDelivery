@@ -2,19 +2,23 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Create Order</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div>
-            <label for="id_payment_method">Payment Method:</label><br>
-            {{ form.payment_method }}
-            <span>(default: Card)</span>
+    <h2 class="text-center mb-4 text-white">Create Order</h2>
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group text-dark">
+                    <label for="id_payment_method">Payment Method</label>
+                    {{ form.payment_method}}
+                    <small class="form-text text-muted">Default: Card</small>
+                </div>
+                <div class="form-group text-dark">
+                    <label for="id_delivery_address">Delivery Address</label>
+                    {{ form.delivery_address }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Place Order</button>
+            </form>
         </div>
-        <div>
-            <label for="id_delivery_address">Delivery Address:</label><br>
-            {{ form.delivery_address }}
-        </div>
-        <button type="submit" class="btn btn-primary">Place Order</button>
-    </form>
+    </div>
 </div>
 {% endblock %}

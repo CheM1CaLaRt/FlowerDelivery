@@ -12,6 +12,8 @@ from django.views.decorators.http import require_POST
 from .models import Product, Cart, CartItem
 from .models import Cart, CartItem, Order, OrderItem
 from django.http import HttpResponseBadRequest
+from .models import Product, Review
+from .forms import ReviewForm
 
 User = get_user_model()
 def index(request):
@@ -34,45 +36,61 @@ def register(request):
 
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    quantity = request.POST.get('quantity')
 
-    if quantity:
-        try:
-            quantity = int(quantity)
-            if quantity < 1:
-                return HttpResponseBadRequest("Количество должно быть больше нуля.")
-        except ValueError:
-            return HttpResponseBadRequest("Некорректное значение количества.")
+    # Получаем или создаем корзину для текущего пользователя
+    cart, created = Cart.objects.get_or_create(user=request.user)
 
-        # Получаем или создаем корзину для текущего пользователя
-        cart, created = Cart.objects.get_or_create(user=request.user)
+    # Получаем или создаем элемент корзины
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
-        # Получаем или создаем элемент корзины
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if request.method == "POST":
+        quantity = request.POST.get('quantity')
+        if quantity:
+            try:
+                quantity = int(quantity)
+                if quantity < 1:
+                    return HttpResponseBadRequest("Количество должно быть больше нуля.")
+            except ValueError:
+                return HttpResponseBadRequest("Некорректное значение количества.")
 
-        if created:
-            cart_item.quantity = quantity  # Устанавливаем выбранное количество
-        else:
-            cart_item.quantity += quantity  # Увеличиваем количество на выбранное значение
+            if created:
+                cart_item.quantity = quantity  # Устанавливаем выбранное количество
+            else:
+                cart_item.quantity += quantity  # Увеличиваем количество на выбранное значение
 
         cart_item.save()
         return redirect('view_cart')  # Замените на ваше представление корзины
 
-    return HttpResponseBadRequest("Не удалось добавить товар в корзину.")
+    # Для GET-запросов или если количество не указано, добавляем один товар
+    if created:
+        cart_item.quantity = 1  # Устанавливаем количество по умолчанию
+    else:
+        cart_item.quantity += 1  # Увеличиваем количество на 1
+
+    cart_item.save()
+    return redirect('view_cart')
 
 @login_required
 def view_cart(request):
-    cart = Cart.objects.get(user=request.user)
+    cart, created = Cart.objects.get_or_create(user=request.user)
     cart_items = CartItem.objects.filter(cart=cart)
+    total_price = sum(item.get_total_price() for item in cart_items)
 
-    total_price = sum(item.product.price * item.quantity for item in cart_items)
-
-    context = {
+    return render(request, 'shop/view_cart.html', {
         'cart_items': cart_items,
         'total_price': total_price,
-    }
+    })
 
-    return render(request, 'shop/view_cart.html', context)
+@login_required
+def remove_from_cart(request, cart_item_id):
+    # Получаем элемент корзины по его ID
+    cart_item = get_object_or_404(CartItem, id=cart_item_id)
+
+    # Проверяем, что этот элемент принадлежит текущей корзине пользователя
+    if cart_item.cart.user == request.user:
+        cart_item.delete()
+
+    return redirect('view_cart')
 
 
 @login_required
@@ -102,11 +120,6 @@ def create_order(request):
     else:
         form = OrderForm()
     return render(request, 'shop/create_order.html', {'form': form})
-
-@login_required
-def order_history(request):
-    orders = Order.objects.filter(user=request.user)
-    return render(request, 'shop/order_history.html', {'orders': orders})
 
 @login_required
 def product_list(request):
@@ -139,3 +152,38 @@ def view_orders(request):
 @login_required
 def order_success(request):
     return render(request, 'shop/order_success.html')
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.product = product
+            review.save()
+            return redirect('product_detail', product_id=product.id)  # Redirect to product detail page
+    else:
+        form = ReviewForm()
+    return render(request, 'shop/add_review.html', {'form': form, 'product': product})
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    reviews = product.reviews.all()
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            return redirect('product_detail', product_id=product_id)
+    else:
+        form = ReviewForm()
+
+    return render(request, 'shop/product_detail.html', {
+        'product': product,
+        'reviews': reviews,
+        'form': form,
+    })

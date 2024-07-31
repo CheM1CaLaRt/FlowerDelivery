@@ -3,6 +3,7 @@ from .models import Order, CartItem
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 from .models import OrderItem
+from .models import Review
 
 class OrderForm(forms.ModelForm):
     class Meta:
@@ -46,4 +47,13 @@ class CustomUserCreationForm(UserCreationForm):
             'email': 'Enter your email address.',
             'password1': 'Your password can’t be too similar to your other personal information. Your password must contain at least 8 characters. Your password can’t be a commonly used password. Your password can’t be entirely numeric.',
             'password2': 'Enter the same password as before, for verification.',
+        }
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.NumberInput(attrs={'min': 1, 'max': 5}),
+            'comment': forms.Textarea(attrs={'rows': 3}),
         }
