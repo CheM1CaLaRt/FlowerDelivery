@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_POST
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
 from .models import Product, Cart, CartItem, Order, OrderItem, Review
 from .utils import is_within_working_hours  # Импортируйте функцию проверки рабочего времени
 
