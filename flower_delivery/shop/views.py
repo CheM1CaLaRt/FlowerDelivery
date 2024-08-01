@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
-from .forms import OrderForm, CartItemForm, CustomUserCreationForm, ReviewForm
+from .forms import OrderForm, CustomUserCreationForm, ReviewForm
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.views.decorators.http import require_POST
-from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
-from .models import Product, Cart, CartItem, Order, OrderItem, Review
+from django.http import HttpResponseBadRequest, HttpResponse
+from .models import Product, Cart, CartItem, Order, OrderItem, CustomUser
 from .utils import is_within_working_hours  # Импортируйте функцию проверки рабочего времени
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 User = get_user_model()
 def index(request):
@@ -113,6 +115,8 @@ def create_order(request):
                 )
                 item.delete()  # Удаляем товар из корзины после добавления в заказ
 
+
+
             return redirect('order_success')  # Перенаправляем на страницу успеха
     else:
         form = OrderForm()
@@ -184,3 +188,31 @@ def product_detail(request, product_id):
         'reviews': reviews,
         'form': form,
     })
+
+#telegram
+@csrf_exempt
+def get_order_status(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        try:
+            user = CustomUser.objects.get(username=username)
+            orders = Order.objects.filter(user=user)
+            order_statuses = []
+            for order in orders:
+                items = OrderItem.objects.filter(order=order)
+                total_price = sum(item.get_total_price() for item in items)
+                order_statuses.append({
+                    'order_id': order.id,
+                    'status': order.status,
+                    'delivery_address': order.delivery_address,
+                    'created_at': order.created_at.isoformat(),
+                    'total_price': total_price,
+                    'items': [
+                        {'product_name': item.product.name, 'quantity': item.quantity}
+                        for item in items
+                    ],
+                })
+            return JsonResponse({'orders': order_statuses})
+        except CustomUser.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
